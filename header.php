@@ -1,41 +1,37 @@
 <!-- BEGIN HEADER.PHP -->
-<!-- Put these inside the <head> tag of your pages -->
 
 <!-- Basic required meta -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-<!-- PWA manifest (use project path or relative path) -->
-<!-- If your site is at http://localhost/mirchi-main/ use /mirchi-main/manifest.json -->
-<link rel="manifest" href="/mirchi-main/manifest.json" />
+<!-- PWA Manifest (correct relative path) -->
+<link rel="manifest" href="manifest.json" />
 
-<!-- Icons (ensure these files exist at these exact paths) -->
-<link rel="icon" sizes="192x192" href="/mirchi-main/assets/images/icon-192.png" />
-<link rel="icon" sizes="512x512" href="/mirchi-main/assets/images/icon-512.png" />
-<link rel="apple-touch-icon" href="/mirchi-main/assets/images/icon-192.png" />
+<!-- PWA Icons -->
+<link rel="icon" sizes="192x192" href="assets/images/icon-192.png" />
+<link rel="icon" sizes="512x512" href="assets/images/icon-512.png" />
+<link rel="apple-touch-icon" href="assets/images/icon-192.png" />
 
 <!-- Theme / mobile -->
 <meta name="theme-color" content="#0a0a0a" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 
-<!-- Register service worker (adjust path to where sw.js lives) -->
+<!-- Register service worker (correct path + correct scope) -->
 <script>
-  // Only run in secure contexts (localhost or HTTPS)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async () => {
-      try {
-        // If your service worker file is named sw.js and located in project root:
-        const registration = await navigator.serviceWorker.register('/mirchi-main/sw.js', { scope: '/mirchi-main/' });
-        console.log('ServiceWorker registered with scope:', registration.scope);
-      } catch (err) {
-        console.error('SW registration failed:', err);
-      }
-    });
-  }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("sw.js");
+      console.log("Service Worker registered:", registration.scope);
+    } catch (err) {
+      console.error("SW registration failed:", err);
+    }
+  });
+}
 </script>
 
-<!-- then continue with your header HTML -->
+<!-- Actual header HTML -->
 <header class="page-header row">
   <div class="logo-wrapper d-flex align-items-center col-auto">
     <a href="index.php">
@@ -56,9 +52,9 @@
       <ul class="header-right">
         <li class="profile-nav custom-dropdown">
           <div class="user-wrap">
+
             <div class="user-img">
               <?php
-                // guard session usage
                 $pic = isset($_SESSION['pic']) ? htmlspecialchars($_SESSION['pic']) : 'default-user.png';
                 echo '<img src="uploads/' . $pic . '" alt="user"/>';
               ?>
@@ -104,9 +100,11 @@
               <?php } ?>
             </ul>
           </div>
+
         </li>
       </ul>
     </div>
   </div>
 </header>
+
 <!-- END HEADER.PHP -->
