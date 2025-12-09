@@ -63,11 +63,10 @@ installButton.addEventListener("click", async () => {
 <!-- Service Worker Registration -->
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker
-      .register("/mirchi-main/service-worker.js")
-      .then(() => console.log("SW registered successfully"))
-      .catch((err) => console.log("SW registration failed:", err));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/mirchi-main/sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.log("SW registration failed:", err));
   });
 }
 </script>
