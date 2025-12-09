@@ -1,4 +1,4 @@
-<!— BEGIN FOOTER.PHP —>
+<!-- BEGIN FOOTER.PHP -->
 
 <footer class="footer"> 
   <div class="container-fluid">
@@ -27,6 +27,7 @@
   </button>
 </div>
 
+<!-- PWA Install Handler -->
 <script>
 let deferredPrompt;
 const installBox = document.getElementById("installBox");
@@ -59,4 +60,16 @@ installButton.addEventListener("click", async () => {
 });
 </script>
 
-<!— END FOOTER.PHP —>
+<!-- Service Worker Registration -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker
+      .register("/mirchi-main/service-worker.js")
+      .then(() => console.log("SW registered successfully"))
+      .catch((err) => console.log("SW registration failed:", err));
+  });
+}
+</script>
+
+<!-- END FOOTER.PHP -->
