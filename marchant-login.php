@@ -1,0 +1,247 @@
+<?php
+session_start();
+include 'db-connect.php'; // Ensure this securely connects to your DB
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Retrieve and sanitize input
+    $username = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+
+    if (empty($username) || empty($password)) {
+        $error_message = "Email and password are required.";
+    } else {
+        // === Check Merchants Table ===
+        $sql_merchant = "SELECT * FROM merchants WHERE username = ?";
+        $stmt_merchant = mysqli_prepare($conn, $sql_merchant);
+
+        if ($stmt_merchant) {
+            mysqli_stmt_bind_param($stmt_merchant, "s", $username);
+            mysqli_stmt_execute($stmt_merchant);
+            $result_merchant = mysqli_stmt_get_result($stmt_merchant);
+
+            if ($result_merchant && mysqli_num_rows($result_merchant) > 0) {
+                $row = mysqli_fetch_assoc($result_merchant);
+
+                if ($password === $row['password']) { // ✅ Use password_verify() if passwords are hashed
+                    // Set session variables
+                    $_SESSION['user_id'] = $row['id'];
+                    $_SESSION['role'] = $row['role'];
+                    $_SESSION['user'] = $row['name'];
+                    $_SESSION['pic'] = $row['profile_image'];
+                    $_SESSION['merchant_id'] = $row['id'];
+                    $_SESSION['purpose'] = $row['purpose'];
+
+                    $redirect_page = $_SESSION['last_page'] ?? 'marchant-dashboard.php';
+                    unset($_SESSION['last_page']);
+                    header("Location: $redirect_page");
+                    exit();
+                }
+            }
+        }
+
+        // === Check Employees Table ===
+        $sql_employee = "SELECT * FROM employees WHERE username = ?";
+        $stmt_employee = mysqli_prepare($conn, $sql_employee);
+
+        if ($stmt_employee) {
+            mysqli_stmt_bind_param($stmt_employee, "s", $username);
+            mysqli_stmt_execute($stmt_employee);
+            $result_employee = mysqli_stmt_get_result($stmt_employee);
+
+            if ($result_employee && mysqli_num_rows($result_employee) > 0) {
+                $row = mysqli_fetch_assoc($result_employee);
+
+                if ($password === $row['password']) { // ✅ Use password_verify() if passwords are hashed
+                    // Set session variables
+                    $_SESSION['user_id'] = $row['id'];
+                    $_SESSION['role'] = 'employee';
+                    $_SESSION['user'] = $row['name'];
+                    $_SESSION['pic'] = $row['profile_image'];
+                    $_SESSION['merchant_id'] = $row['merchant_id'];
+
+                    // Fetch merchant's purpose
+                    $merchant_id = $row['merchant_id'];
+                    $stmt = $conn->prepare("SELECT purpose FROM merchants WHERE id = ?");
+                    $stmt->bind_param("i", $merchant_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    if ($result && $merchant_data = $result->fetch_assoc()) {
+                        $_SESSION['purpose'] = $merchant_data['purpose'];
+                    } else {
+                        $_SESSION['purpose'] = null;
+                    }
+
+                    $redirect_page = $_SESSION['last_page'] ?? 'marchant-dashboard.php';
+                    unset($_SESSION['last_page']);
+                    header("Location: $redirect_page");
+                    exit();
+                }
+            }
+        }
+
+        // === No Match Found ===
+        $error_message = "Invalid username or password.";
+    }
+}
+
+mysqli_close($conn);
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mirchi - Premium Admin Template">
+    <meta name="keywords" content="Mirchi - Premium Admin Template">
+    <meta name="author" content="pixelstrap">
+    <title>Mirchi - Premium Admin Template</title>
+    <!-- Favicon icon-->
+    <link rel="icon" href="assets/images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon">
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,200;6..12,300;6..12,400;6..12,500;6..12,600;6..12,700;6..12,800;6..12,900;6..12,1000&amp;display=swap" rel="stylesheet">
+    <!-- Flag icon css -->
+    <link rel="stylesheet" href="assets/css/vendors/flag-icon.css">
+    <!-- iconly-icon-->
+    <link rel="stylesheet" href="assets/css/iconly-icon.css">
+    <link rel="stylesheet" href="assets/css/bulk-style.css">
+    <!-- iconly-icon-->
+    <link rel="stylesheet" href="assets/css/themify.css">
+    <!--fontawesome-->
+    <link rel="stylesheet" href="assets/css/fontawesome-min.css">
+    <!-- Whether Icon css-->
+    <link rel="stylesheet" type="text/css" href="assets/css/vendors/weather-icons/weather-icons.min.css">
+    <!-- App css -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link id="color" rel="stylesheet" href="assets/css/color-1.css" media="screen">
+    <style>
+    .error-message{
+        color:red;
+      }
+      .show-hide {
+      display: none; /* Initially hidden */
+    }
+    .show-hide.active {
+      display: block; /* Only display when 'active' class is added */
+    }
+    </style>
+  </head>
+  <body>
+    <!-- tap on top starts-->
+    <div class="tap-top"><i class="iconly-Arrow-Up icli"></i></div>
+    <!-- tap on tap ends-->
+    <!-- loader-->
+    <div class="loader-wrapper">
+      <div class="loader"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <!-- login page start-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xl-5 login_two_image"></div>
+        <div class="col-xl-7 p-0">    
+          <div class="login-card login-dark login-bg">
+            <div>
+              <div>
+                <a class="logo" href="login.php">
+                  <img class="img-fluid for-light m-auto" src="assets/images/logo/logo1.png" alt="looginpage">
+                  <img class="for-dark" src="assets/images/logo/logo-dark.png" alt="logo" width="100">
+                </a>
+              </div>
+              <div class="login-main"> 
+                <form class="theme-form" id="loginForm" method="POST">
+                  <h2 class="text-center">Sign in to account</h2>
+                  <p class="text-center">
+                  <?php
+                    if (isset($error_message)) {
+                        echo '<p style="color:red;">' . $error_message . '</p>';
+                    }
+                  ?>
+                  </p>
+                 
+                  <div class="form-group">
+                    <label class="col-form-label">Email Address</label>
+                    <input class="form-control" type="email" name="email">
+                  </div>
+                  <div class="form-group">
+                    <label class="col-form-label">Password</label>
+                    <div class="form-input position-relative">
+                      <input class="form-control" type="password" name="password" id="password">
+                      <div class="show-hide"><span class="show"></span></div>
+                    </div>
+                  </div>
+                  <div class="form-group mb-0 checkbox-checked">
+                    <div class="form-check checkbox-solid-info">
+                      <input class="form-check-input" id="solid6" type="checkbox" name="remember_me">
+                      <label class="form-check-label" for="solid6">Remember password</label>
+                    </div>
+                    <a class="link" href="forgot-password.php">Forgot password?</a>
+                    <div class="text-end mt-3">
+                      <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
+                    </div>
+                  </div>
+                  
+                  <p class="mt-4 mb-0 text-center">@all rights are reserved<a class="ms-2" href="#">Mirchi CRM</a></p>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- jquery-->
+      <script src="assets/js/vendors/jquery/jquery.min.js"></script>
+      <!-- bootstrap js-->
+      <script src="assets/js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js" defer=""></script>
+      <script src="assets/js/vendors/bootstrap/dist/js/popper.min.js" defer=""></script>
+      <!--fontawesome-->
+      <script src="assets/js/vendors/font-awesome/fontawesome-min.js"></script>
+      <!-- password_show-->
+      <script src="assets/js/password.js"></script>
+      <!-- custom script -->
+      <script src="assets/js/script.js"></script>
+<!-- jQuery Validation Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script>
+  $(document).ready(function () {
+  // Initialize form validation on the login form
+  $("#loginForm").validate({
+    rules: {
+      email: {
+        required: true,                 // Email field is required
+        email: true                     // Email must be in a valid format
+      },
+      password: {
+        required: true,                 // Password field is required
+        minlength: 6                    // Password must be at least 6 characters
+      }
+    },
+    messages: {
+      email: {
+        required: "Please enter your email address.",  // Custom message for empty email
+        email: "Please enter a valid email address."    // Custom message for invalid email format
+      },
+      "login[password]": {
+        required: "Please enter your password.",  // Custom message for empty password
+        minlength: "Your password must be at least 6 characters long."  // Custom message for password length
+      }
+    },
+    errorElement: "span",                // The error message will be wrapped in a <span> tag
+    errorClass: "error-message",         // Assigns this class to the error message
+    highlight: function (element) {
+      $(element).addClass("is-invalid"); // Add class to highlight invalid fields
+    },
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid"); // Remove class when the field is valid
+    }
+  });
+});
+
+</script>
+    </div>
+  </body>
+</html>
