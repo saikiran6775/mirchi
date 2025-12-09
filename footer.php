@@ -33,10 +33,10 @@ let deferredPrompt;
 const installBox = document.getElementById("installBox");
 const installButton = document.getElementById("installButton");
 
-// Hide button by default
+// Hide by default
 installBox.style.display = "none";
 
-// Detect install availability
+// Trigger when PWA installable
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
@@ -45,7 +45,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
   installBox.style.display = "block";
 });
 
-// Install app on button click
+// Install handler
 installButton.addEventListener("click", async () => {
   installBox.style.display = "none";
   deferredPrompt.prompt();
@@ -60,15 +60,7 @@ installButton.addEventListener("click", async () => {
 });
 </script>
 
-<!-- Service Worker Registration -->
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/mirchi-main/sw.js")
-      .then(() => console.log("Service Worker Registered"))
-      .catch(err => console.log("SW registration failed:", err));
-  });
-}
-</script>
+<!-- DO NOT register service worker here.
+     Registration is already done in header.php -->
 
 <!-- END FOOTER.PHP -->
