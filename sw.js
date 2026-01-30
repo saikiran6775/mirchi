@@ -1,11 +1,11 @@
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open("v1").then(cache => cache.addAll(["/"]))
-  );
+self.addEventListener('install', event => {
+  self.skipWaiting();
 });
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(res => res || fetch(event.request))
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(fetch(event.request));
 });
