@@ -1,19 +1,19 @@
 {
   "name": "Mirchi CRM",
   "short_name": "MirchiCRM",
-  "start_url": "/mirchi-main/",
-  "scope": "/mirchi-main/",
+  "start_url": "./login.php",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a0a0a",
   "icons": [
     {
-      "src": "/mirchi-main/assets/images/icon-192.png",
+      "src": "assets/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/mirchi-main/assets/images/icon-512.png",
+      "src": "assets/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

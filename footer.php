@@ -33,40 +33,42 @@ let deferredPrompt;
 const installBox = document.getElementById("installBox");
 const installButton = document.getElementById("installButton");
 
-// Hide button by default
-installBox.style.display = "none";
+if (installBox && installButton) {
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  installBox.style.display = isStandalone ? "none" : "block";
 
-// Detect install availability
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+  // Detect install availability.
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBox.style.display = "block";
+  });
 
-  // Show install button
-  installBox.style.display = "block";
-});
+  // Hide once installed.
+  window.addEventListener("appinstalled", () => {
+    installBox.style.display = "none";
+    deferredPrompt = null;
+  });
 
-// Install app on button click
-installButton.addEventListener("click", async () => {
-  installBox.style.display = "none";
-  deferredPrompt.prompt();
+  // Install app on button click.
+  installButton.addEventListener("click", async () => {
+    if (!deferredPrompt) {
+      const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+      if (isIos) {
+        alert("On iPhone/iPad: tap Share and choose 'Add to Home Screen'.");
+      } else if (!window.isSecureContext) {
+        alert("Install requires HTTPS (or localhost). Open this app on a secure URL.");
+      } else {
+        alert("Install prompt is not available yet. Browse the app for a few seconds and try again.");
+      }
+      return;
+    }
 
-  const result = await deferredPrompt.userChoice;
+    installBox.style.display = "none";
+    deferredPrompt.prompt();
 
-  if (result.outcome === "accepted") {
-    console.log("PWA Installed");
-  }
-
-  deferredPrompt = null;
-});
-</script>
-
-<!-- Service Worker Registration -->
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/mirchi-main/sw.js")
-      .then(() => console.log("Service Worker Registered"))
-      .catch(err => console.log("SW registration failed:", err));
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
   });
 }
 </script>

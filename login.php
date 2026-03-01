@@ -6,6 +6,8 @@ include 'db-connect.php';
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mirchi CRM – Login</title>
 
   <!-- ✅ PWA HEAD -->
@@ -58,18 +60,40 @@ let deferredPrompt;
 const box = document.getElementById('installBox');
 const btn = document.getElementById('installBtn');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  box.style.display = 'block';
-});
+if (box && btn) {
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  box.style.display = isStandalone ? 'none' : 'block';
 
-btn.addEventListener('click', async () => {
-  box.style.display = 'none';
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-});
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    box.style.display = 'block';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    box.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  btn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+      if (isIos) {
+        alert("On iPhone/iPad: tap Share and choose 'Add to Home Screen'.");
+      } else if (!window.isSecureContext) {
+        alert("Install requires HTTPS (or localhost). Open this app on a secure URL.");
+      } else {
+        alert("Install prompt is not available yet. Browse the app for a few seconds and try again.");
+      }
+      return;
+    }
+
+    box.style.display = 'none';
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+}
 </script>
 
 </body>
